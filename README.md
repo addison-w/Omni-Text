@@ -23,13 +23,22 @@ Omni Text lives in your menu bar and waits for a hotkey. When triggered, it grab
 
 ```
 1. 📝 Select text in any application
-2. ⌨️  Press your hotkey (e.g. ⌘⌥⇧P)
+2. ⌨️  Press your hotkey
 3. 🤖 Text is sent to your LLM provider
 4. ✅ Rewritten text replaces your selection
 5. ↩️  ⌘Z to undo if you don't like it
 ```
 
 No context switching. No copy-paste. No browser tabs. Just better text.
+
+### Default Actions
+
+| Hotkey | Action | Description |
+|--------|--------|-------------|
+| `⌘⇧1` | **Proofread** | Fix spelling, grammar, and punctuation |
+| `⌘⇧2` | **Rewrite** | Rewrite for clarity and readability |
+
+You can customize these or add your own in Settings → Actions.
 
 ## 🎯 Features
 

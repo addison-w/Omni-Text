@@ -1,0 +1,30 @@
+[package]
+name = "omni-text"
+version = "0.1.0"
+description = "macOS hotkey text rewrite app"
+authors = ["addison"]
+edition = "2021"
+
+[lib]
+name = "omni_text_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["macos-private-api", "tray-icon"] }
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
+tauri-plugin-store = "2"
+tauri-plugin-sql = { version = "2", features = ["sqlite"] }
+tauri-plugin-clipboard-manager = "2"
+window-vibrancy = "0.5"
+keyring = { version = "3", features = ["apple-native"] }
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+rdev = "0.5"

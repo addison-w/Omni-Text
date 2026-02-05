@@ -164,16 +164,24 @@
     });
   });
 
-  function handleOnboardingComplete() {
+  async function handleOnboardingComplete() {
     appState.hasCompletedOnboarding = true;
     currentView = 'popover';
     resizeWindow(360, 520);
     // Register hotkeys after onboarding
     for (const action of appState.actions) {
       if (action.enabled && action.hotkey) {
-        registerHotkey(action.id, action.hotkey).catch(console.error);
+        try {
+          await registerHotkey(action.id, action.hotkey);
+        } catch (e) {
+          console.error(`Failed to register hotkey for ${action.name}:`, e);
+        }
       }
     }
+    // Listen for hotkey events from Rust
+    await listen<string>('hotkey-triggered', (event) => {
+      handleHotkeyTriggered(event.payload);
+    });
   }
 
   const tabs = [

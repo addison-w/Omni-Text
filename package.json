@@ -1,7 +1,7 @@
 {
   "name": "omni-text",
   "version": "0.1.0",
-  "description": "macOS hotkey text rewrite app",
+  "description": "macOS menu bar app that rewrites selected text using LLMs, triggered by global hotkeys",
   "type": "module",
   "scripts": {
     "dev": "vite dev",

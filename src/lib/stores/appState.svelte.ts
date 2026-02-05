@@ -15,11 +15,21 @@ let actions = $state<RewriteAction[]>([
   {
     id: "default-proofread",
     name: "Proofread",
-    hotkey: "CommandOrControl+Alt+Shift+P",
+    hotkey: "CommandOrControl+Shift+1",
     system_prompt:
       "You are a meticulous proofreader. Fix all spelling, grammar, and punctuation errors. Preserve the original tone and meaning. Only output the corrected text, nothing else.",
     user_template: "{{text}}",
     output_rules: "Output only the corrected text. No explanations.",
+    enabled: true,
+  },
+  {
+    id: "default-rewrite",
+    name: "Rewrite",
+    hotkey: "CommandOrControl+Shift+2",
+    system_prompt:
+      "You are a skilled editor. Rewrite the given text to improve clarity, readability, and flow. Simplify complex sentences, remove ambiguity, and make the meaning immediately clear. Preserve the original intent and information. Only output the rewritten text, nothing else.",
+    user_template: "{{text}}",
+    output_rules: "Output only the rewritten text. No explanations.",
     enabled: true,
   },
 ]);

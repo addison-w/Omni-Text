@@ -191,7 +191,7 @@
     <div class="text-center flex flex-col gap-4 max-w-sm">
       <h2 class="text-xl font-semibold">You're All Set!</h2>
       <p class="text-sm text-white/60">
-        Select any text and press <span class="font-mono bg-white/10 px-1.5 py-0.5 rounded">⌘⌥⇧P</span> to proofread it.
+        Select any text and press <span class="font-mono bg-white/10 px-1.5 py-0.5 rounded">⌘⇧1</span> to proofread or <span class="font-mono bg-white/10 px-1.5 py-0.5 rounded">⌘⇧2</span> to rewrite it.
       </p>
       <p class="text-xs text-white/40">
         You can customize actions and hotkeys in Settings.

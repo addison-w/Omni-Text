@@ -5,7 +5,7 @@ mod services;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Manager,
+    AppHandle, Manager,
 };
 use tauri_plugin_positioner::{Position, WindowExt as PosWindowExt};
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
@@ -17,6 +17,11 @@ use commands::{
     llm_provider::*,
     text_interaction::*,
 };
+
+#[tauri::command]
+fn quit_app(app: AppHandle) {
+    app.exit(0);
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -67,6 +72,7 @@ pub fn run() {
             search_history,
             delete_history_entry,
             clear_history,
+            quit_app,
         ])
         .setup(|app| {
             // Hide from Dock — menu bar only app

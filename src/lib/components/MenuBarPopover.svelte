@@ -37,8 +37,7 @@
 
   function handleQuit() {
     import('@tauri-apps/api/core').then(({ invoke }) => {
-      // The tray menu handles quit, but we can also exit from here
-      window.close();
+      invoke('quit_app');
     });
   }
 </script>

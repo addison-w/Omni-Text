@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
   interface Props {
     value: string;
     onchange?: (shortcut: string) => void;
@@ -23,10 +25,20 @@
     recording = true;
   }
 
+  function stopRecording() {
+    recording = false;
+  }
+
   function handleKeyDown(e: KeyboardEvent) {
     if (!recording) return;
     e.preventDefault();
     e.stopPropagation();
+
+    // Escape cancels recording
+    if (e.key === 'Escape') {
+      recording = false;
+      return;
+    }
 
     const parts: string[] = [];
     if (e.metaKey) parts.push('CommandOrControl');
@@ -44,6 +56,16 @@
       onchange?.(shortcut);
     }
   }
+
+  // Use window-level listener so key events are captured regardless of focus
+  onMount(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('blur', stopRecording);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('blur', stopRecording);
+    };
+  });
 </script>
 
 <button
@@ -52,7 +74,6 @@
       ? 'bg-blue-500/30 border-blue-400/50 text-blue-200 animate-pulse'
       : 'bg-white/10 border border-white/20 text-white/70 hover:bg-white/15'}"
   onclick={startRecording}
-  onkeydown={handleKeyDown}
 >
   {recording ? 'Press shortcut...' : displayValue}
 </button>

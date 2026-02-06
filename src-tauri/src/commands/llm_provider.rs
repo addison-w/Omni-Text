@@ -18,7 +18,17 @@ pub async fn call_llm(
         .build()
         .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
 
-    let url = format!("{}/v1/chat/completions", base_url.trim_end_matches('/'));
+    let base = base_url.trim_end_matches('/');
+    let url = if base.ends_with("/chat/completions") {
+        base.to_string()
+    } else if base.split('/').last().map_or(false, |s| {
+        s.starts_with('v') && s[1..].chars().all(|c| c.is_ascii_digit())
+    }) {
+        // Base URL already ends with a version path like /v1, /v4
+        format!("{}/chat/completions", base)
+    } else {
+        format!("{}/v1/chat/completions", base)
+    };
 
     let request_body = ChatCompletionRequest {
         model,

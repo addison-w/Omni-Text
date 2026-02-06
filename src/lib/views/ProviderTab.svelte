@@ -9,9 +9,15 @@
   let testing = $state(false);
   let testResult = $state<{ success: boolean; message: string } | null>(null);
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
+  let lastLoadedProvider = '';
 
+  // Load API key only when provider name actually changes
   $effect(() => {
-    loadApiKey();
+    const name = appState.provider.name;
+    if (name !== lastLoadedProvider) {
+      lastLoadedProvider = name;
+      loadApiKey(name);
+    }
   });
 
   // Autosave provider settings on change (debounced)
@@ -48,9 +54,9 @@
     }, 500);
   });
 
-  async function loadApiKey() {
+  async function loadApiKey(providerName: string) {
     try {
-      const key = await getApiKey(appState.provider.name);
+      const key = await getApiKey(providerName);
       apiKey = key ?? '';
       apiKeyLoaded = true;
     } catch (e) {

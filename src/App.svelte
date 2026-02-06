@@ -100,7 +100,7 @@
         }
       }
 
-      showToast(`Rewritten (${response.duration_ms}ms). ⌘Z to undo.`, 'success');
+      // Tray icon indicates success — no toast needed
     } catch (e) {
       hadError = true;
       const error = String(e);

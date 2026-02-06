@@ -17,7 +17,7 @@
 
 ---
 
-Omni Text lives in your menu bar and waits for a hotkey. When triggered, it grabs your selected text, sends it to an LLM, and replaces it with the result — all without leaving the app you're working in. Proofread an email, rephrase a Slack message, translate a paragraph, or run any custom prompt you can dream up.
+Ever typed a message, stared at it, and thought "that sounds weird"? Omni Text fixes that. It lives quietly in your menu bar, waiting for a hotkey. When you press it, your selected text gets sent to an LLM and replaced with the result — right where you typed it. No copy-pasting. No switching apps. No opening ChatGPT in a browser tab.
 
 ## How It Works
 
@@ -29,7 +29,19 @@ Omni Text lives in your menu bar and waits for a hotkey. When triggered, it grab
 5. Cmd+Z to undo if you don't like it
 ```
 
-No context switching. No copy-paste. No browser tabs. Just better text.
+That's it. The whole thing takes about a second.
+
+## Real Use Cases
+
+**Fixing embarrassing emails before you hit send** — Select your draft, press `Cmd+Shift+1`, and Omni Text fixes your spelling, grammar, and punctuation. Your coworkers will think you suddenly became meticulous.
+
+**Making Slack messages sound less unhinged** — You typed "pls fix the thing its broken again thx" at 2am. Select it, press `Cmd+Shift+2`, and it becomes "Could you take a look at the issue? It seems to have resurfaced. Thanks!" Crisis averted.
+
+**Translating on the fly** — Create a custom action with a system prompt like "Translate the following text to Japanese. Output only the translation." Now you have a one-hotkey translator that works in any app.
+
+**Simplifying technical jargon** — Writing docs for non-technical stakeholders? Create an action that rewrites text for a general audience. Select the paragraph full of acronyms, hotkey, done.
+
+**Writing commit messages** — Yes, really. Select your messy notes in a text editor, run a custom "Write a concise git commit message from these notes" action, paste it into your terminal.
 
 ### Default Actions
 
@@ -38,39 +50,54 @@ No context switching. No copy-paste. No browser tabs. Just better text.
 | `Cmd+Shift+1` | **Proofread** | Fix spelling, grammar, and punctuation |
 | `Cmd+Shift+2` | **Rewrite** | Rewrite for clarity and readability |
 
-You can customize these or add your own in the Actions tab.
+These are just the defaults — you can create as many custom actions as you want, each with its own hotkey and system prompt.
 
 ## Features
 
 | Feature | Description |
 |---------|-------------|
-| **Global Hotkeys** | Trigger actions from any app — no window switching |
-| **Custom Actions** | Unlimited rewrite prompts, each with its own hotkey |
-| **Multiple Providers** | Configure multiple OpenAI-compatible providers, switch between them with one click |
-| **Smart URL Handling** | Accepts bare domains, versioned paths (`/v1`), or full endpoint URLs |
-| **Menu Bar Native** | Lives in your menu bar — no Dock icon, zero distraction |
-| **Animated Tray Icon** | Pixelated cat icon shows app status: ready, processing, or error |
-| **Privacy Mode** | Disable history logging for sensitive content |
-| **Local History** | Searchable SQLite log of every rewrite |
-| **Native macOS Feel** | Translucent HUD window with always-active vibrancy |
-| **Keychain Storage** | API keys stored in macOS Keychain, never on disk |
-| **Autosave** | All settings persist automatically as you type |
+| **Global Hotkeys** | Trigger actions from any app — no window switching needed |
+| **Custom Actions** | Create unlimited rewrite prompts, each with its own hotkey |
+| **Multiple Providers** | Configure several LLM providers and switch between them with one click |
+| **Any OpenAI-Compatible API** | Works with OpenAI, Anthropic (via proxy), Ollama, LM Studio, Groq, Together AI, Azure OpenAI, or any server that implements the OpenAI chat completions standard |
+| **Smart URL Handling** | Just paste your base URL — Omni Text figures out the right endpoint whether you give it `https://api.openai.com`, `https://api.example.com/v1`, or the full path |
+| **Menu Bar Native** | Lives in your menu bar with zero Dock presence — it's there when you need it, invisible when you don't |
+| **Animated Tray Icon** | A little pixelated cat in your menu bar blinks while processing and looks alarmed when something goes wrong |
+| **Privacy Mode** | Toggle off history logging when you're working with sensitive content |
+| **Local History** | Searchable SQLite log of every rewrite — see what changed and when |
+| **Keychain Storage** | API keys are stored in macOS Keychain, never written to disk |
+| **Autosave** | All settings persist automatically as you type — no save buttons anywhere |
+| **Always-On Vibrancy** | Translucent glass UI stays beautiful whether the window is focused or not |
+
+## Supported Providers
+
+Omni Text works with **any server that implements the OpenAI chat completions API standard** (`/v1/chat/completions`). This includes:
+
+- **OpenAI** — GPT-4o, GPT-4o mini, etc.
+- **Groq** — Llama, Mixtral with ultra-fast inference
+- **Together AI** — Open-source models hosted in the cloud
+- **Ollama** — Run models locally on your Mac
+- **LM Studio** — Local model server with a nice UI
+- **Azure OpenAI** — Enterprise OpenAI deployments
+- **Any OpenAI-compatible server** — If it speaks the OpenAI API format, it works
+
+Configure multiple providers in the **Providers** tab and switch between them with a single click. Use GPT-4o for important emails and a local Llama model for quick proofreading — your call.
 
 ## Installation
 
 Download the latest `.dmg` from the [Releases](https://github.com/addison-w/Omni-Text/releases) page.
 
 1. Open the `.dmg` and drag **Omni Text** to Applications
-2. Launch from Applications — the cat icon appears in your menu bar
-3. Grant **Accessibility** permission when prompted (required to read/replace selected text)
-4. Configure your LLM provider in the **Providers** tab
-5. Start rewriting with `Cmd+Shift+1` or `Cmd+Shift+2`
+2. Launch it — a cat icon appears in your menu bar
+3. Grant **Accessibility** permission when prompted (this is how it reads and replaces your selected text)
+4. Go to the **Providers** tab and add your API key
+5. Select some text anywhere and press `Cmd+Shift+1` — welcome to the future
 
-## Requirements
+### Requirements
 
 - **macOS 13+** (Ventura or later)
-- **Accessibility permission** — required to read and replace selected text
-- **API key** from OpenAI, Anthropic, or any OpenAI-compatible provider
+- **Accessibility permission** — macOS requires this for apps that read/replace text in other applications
+- **An API key** from any OpenAI-compatible provider
 
 ## Development
 
@@ -83,10 +110,7 @@ Download the latest `.dmg` from the [Releases](https://github.com/addison-w/Omni
 ### Get Started
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Run in development mode
 pnpm tauri dev
 ```
 
@@ -96,7 +120,7 @@ pnpm tauri dev
 pnpm tauri build
 ```
 
-Find your `.app` bundle in `src-tauri/target/release/bundle/macos/`.
+The `.app` and `.dmg` land in `src-tauri/target/release/bundle/`.
 
 ## Tech Stack
 
@@ -113,4 +137,4 @@ UI          HUD Window + Vibrancy
 
 ## License
 
-MIT
+MIT — do whatever you want with it.

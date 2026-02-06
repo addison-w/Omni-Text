@@ -131,7 +131,7 @@
               class="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors cursor-pointer
                 {appState.activeProviderId === provider.id
                   ? 'border-green-400 bg-green-400/20'
-                  : 'border-white/30 hover:border-white/50'}"
+                  : 'border-black/25 dark:border-white/30 hover:border-black/40 dark:hover:border-white/50'}"
               role="radio"
               tabindex="-1"
               aria-checked={appState.activeProviderId === provider.id}
@@ -143,60 +143,60 @@
               {/if}
             </div>
             <div class="flex flex-col">
-              <span class="text-sm font-medium text-white/90">{provider.name}</span>
-              <span class="text-[11px] text-white/40 font-mono">{provider.model}</span>
+              <span class="text-sm font-medium text-black/85 dark:text-white/90">{provider.name}</span>
+              <span class="text-[11px] text-black/40 dark:text-white/40 font-mono">{provider.model}</span>
             </div>
           </div>
         </button>
 
         <!-- Expanded editor -->
         {#if expandedId === provider.id}
-          <div class="flex flex-col gap-3 pt-2 border-t border-white/10">
+          <div class="flex flex-col gap-3 pt-2 border-t border-black/10 dark:border-white/10">
             <label class="flex flex-col gap-1">
-              <span class="text-xs text-white/50">Provider Name</span>
+              <span class="text-xs text-black/50 dark:text-white/50">Provider Name</span>
               <input
                 type="text"
                 value={provider.name}
                 oninput={(e) => updateProvider(provider.id, 'name', (e.target as HTMLInputElement).value)}
-                class="bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white/90 outline-none focus:border-white/30"
+                class="bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/15 rounded-lg px-3 py-2 text-sm text-black/85 dark:text-white/90 outline-none focus:border-black/25 dark:focus:border-white/30"
               />
             </label>
 
             <label class="flex flex-col gap-1">
-              <span class="text-xs text-white/50">Base URL</span>
+              <span class="text-xs text-black/50 dark:text-white/50">Base URL</span>
               <input
                 type="text"
                 value={provider.base_url}
                 oninput={(e) => updateProvider(provider.id, 'base_url', (e.target as HTMLInputElement).value)}
                 placeholder="https://api.openai.com"
-                class="bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white/90 font-mono outline-none focus:border-white/30"
+                class="bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/15 rounded-lg px-3 py-2 text-sm text-black/85 dark:text-white/90 font-mono outline-none focus:border-black/25 dark:focus:border-white/30"
               />
             </label>
 
             <label class="flex flex-col gap-1">
-              <span class="text-xs text-white/50">Model</span>
+              <span class="text-xs text-black/50 dark:text-white/50">Model</span>
               <input
                 type="text"
                 value={provider.model}
                 oninput={(e) => updateProvider(provider.id, 'model', (e.target as HTMLInputElement).value)}
                 placeholder="gpt-4o-mini"
-                class="bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white/90 font-mono outline-none focus:border-white/30"
+                class="bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/15 rounded-lg px-3 py-2 text-sm text-black/85 dark:text-white/90 font-mono outline-none focus:border-black/25 dark:focus:border-white/30"
               />
             </label>
 
             <label class="flex flex-col gap-1">
-              <span class="text-xs text-white/50">API Key</span>
+              <span class="text-xs text-black/50 dark:text-white/50">API Key</span>
               <input
                 type="password"
                 value={apiKeys[provider.id] ?? ''}
                 oninput={(e) => handleApiKeyInput(provider.id, (e.target as HTMLInputElement).value)}
                 placeholder={apiKeyLoaded[provider.id] ? '••••••••' : 'Loading...'}
-                class="bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white/90 font-mono outline-none focus:border-white/30"
+                class="bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/15 rounded-lg px-3 py-2 text-sm text-black/85 dark:text-white/90 font-mono outline-none focus:border-black/25 dark:focus:border-white/30"
               />
             </label>
 
             <label class="flex flex-col gap-1">
-              <span class="text-xs text-white/50">Timeout: {provider.timeout_secs}s</span>
+              <span class="text-xs text-black/50 dark:text-white/50">Timeout: {provider.timeout_secs}s</span>
               <input
                 type="range"
                 min="5"
@@ -209,7 +209,7 @@
             </label>
 
             <button
-              class="w-full py-2 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/15 text-white/70 border border-white/10 disabled:opacity-50 cursor-pointer"
+              class="w-full py-2 rounded-xl text-sm font-medium bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-black/60 dark:text-white/70 border border-black/10 dark:border-white/10 disabled:opacity-50 cursor-pointer"
               onclick={() => handleTest(provider)}
               disabled={testing === provider.id}
             >
@@ -217,7 +217,7 @@
             </button>
 
             {#if testResult && expandedId === provider.id}
-              <div class="text-center text-xs {testResult.success ? 'text-green-300' : 'text-red-300'}">
+              <div class="text-center text-xs {testResult.success ? 'text-green-600 dark:text-green-300' : 'text-red-600 dark:text-red-300'}">
                 {testResult.message}
               </div>
             {/if}
@@ -227,13 +227,13 @@
                 {#if confirmingDeleteId === provider.id}
                   <div class="flex gap-2">
                     <button
-                      class="flex-1 py-1.5 rounded-lg text-xs font-medium bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-400/20 cursor-pointer"
+                      class="flex-1 py-1.5 rounded-lg text-xs font-medium bg-red-500/20 hover:bg-red-500/30 text-red-600 dark:text-red-300 border border-red-400/20 cursor-pointer"
                       onclick={() => deleteProvider(provider.id)}
                     >
                       Confirm Delete
                     </button>
                     <button
-                      class="flex-1 py-1.5 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/15 text-white/70 border border-white/10 cursor-pointer"
+                      class="flex-1 py-1.5 rounded-lg text-xs font-medium bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-black/60 dark:text-white/70 border border-black/10 dark:border-white/10 cursor-pointer"
                       onclick={() => confirmingDeleteId = null}
                     >
                       Cancel
@@ -241,7 +241,7 @@
                   </div>
                 {:else}
                   <button
-                    class="w-full py-1.5 rounded-lg text-xs font-medium bg-red-500/10 hover:bg-red-500/20 text-red-300/70 border border-red-400/10 cursor-pointer"
+                    class="w-full py-1.5 rounded-lg text-xs font-medium bg-red-500/10 hover:bg-red-500/20 text-red-500/70 dark:text-red-300/70 border border-red-400/10 cursor-pointer"
                     onclick={() => confirmingDeleteId = provider.id}
                   >
                     Delete Provider
@@ -256,7 +256,7 @@
   {/each}
 
   <button
-    class="w-full py-2 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/15 text-white/60 border border-dashed border-white/20 cursor-pointer"
+    class="w-full py-2 rounded-xl text-sm font-medium bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-black/50 dark:text-white/60 border border-dashed border-black/15 dark:border-white/20 cursor-pointer"
     onclick={addProvider}
   >
     + Add Provider

@@ -157,7 +157,7 @@
   ] as const;
 </script>
 
-<div class="h-full w-full flex flex-col text-white/90 {themeStore.theme === 'dark' ? 'dark' : ''}">
+<div class="h-full w-full flex flex-col text-black/85 dark:text-white/90 {themeStore.theme === 'dark' ? 'dark' : ''}">
   <Toast message={toastMessage} variant={toastVariant} visible={toastVisible} />
 
   {#if showOnboarding}
@@ -166,18 +166,18 @@
     <div class="flex flex-col h-full">
       <!-- Header -->
       <div class="flex items-center justify-between px-4 pt-3 pb-1">
-        <span class="text-sm font-semibold text-white/90">Omni Text</span>
+        <span class="text-sm font-semibold text-black/85 dark:text-white/90">Omni Text</span>
         <StatusIndicator status={appState.status} />
       </div>
 
       <!-- Tab bar -->
-      <div class="flex px-4 gap-1 border-b border-white/10">
+      <div class="flex px-4 gap-1 border-b border-black/10 dark:border-white/10">
         {#each tabs as tab}
           <button
             class="px-3 py-2 text-xs font-medium transition-colors border-b-2 cursor-pointer
               {activeTab === tab.id
-                ? 'border-white/60 text-white/90'
-                : 'border-transparent text-white/40 hover:text-white/60'}"
+                ? 'border-black/50 dark:border-white/60 text-black/85 dark:text-white/90'
+                : 'border-transparent text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60'}"
             onclick={() => activeTab = tab.id}
           >
             {tab.label}

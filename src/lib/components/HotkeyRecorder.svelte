@@ -72,7 +72,7 @@
   class="px-3 py-1.5 rounded-lg text-xs font-mono transition-all
     {recording
       ? 'bg-blue-500/30 border-blue-400/50 text-blue-200 animate-pulse'
-      : 'bg-white/10 border border-white/20 text-white/70 hover:bg-white/15'}"
+      : 'bg-black/5 dark:bg-white/10 border border-black/15 dark:border-white/20 text-black/60 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/15'}"
   onclick={startRecording}
 >
   {recording ? 'Press shortcut...' : displayValue}

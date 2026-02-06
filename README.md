@@ -87,6 +87,17 @@ Configure multiple providers in the **Providers** tab and switch between them wi
 
 ## 📦 Installation
 
+### 🍺 Homebrew (Recommended)
+
+```bash
+brew tap addison-w/omni-text
+brew install --cask omni-text
+```
+
+That's it — no extra steps, no Gatekeeper warnings.
+
+### 📥 Manual Download
+
 Download the latest `.dmg` from the [Releases](https://github.com/addison-w/Omni-Text/releases) page.
 
 1. 💿 Open the `.dmg` and drag **Omni Text** to Applications
@@ -95,13 +106,11 @@ Download the latest `.dmg` from the [Releases](https://github.com/addison-w/Omni
 4. 🔑 Go to the **Providers** tab and add your API key
 5. ✨ Select some text anywhere and press `Cmd+Shift+1` — welcome to the future
 
-> **⚠️ "App is damaged and can't be opened"** — This happens because the app isn't code-signed with an Apple Developer certificate yet. macOS Gatekeeper quarantines unsigned apps downloaded from the internet. To fix it, run this in Terminal after dragging to Applications:
+> **⚠️ "App is damaged and can't be opened"** — The app isn't code-signed yet. Run this once in Terminal:
 >
 > ```bash
 > xattr -cr /Applications/Omni\ Text.app
 > ```
->
-> Then open the app normally. You only need to do this once.
 
 ### 📋 Requirements
 

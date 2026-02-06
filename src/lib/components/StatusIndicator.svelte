@@ -14,5 +14,5 @@
 
 <div class="flex items-center gap-1.5">
   <div class="w-2 h-2 rounded-full {config.color}"></div>
-  <span class="text-xs text-white/50">{config.label}</span>
+  <span class="text-xs text-black/50 dark:text-white/50">{config.label}</span>
 </div>

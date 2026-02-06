@@ -151,7 +151,7 @@
 
   const tabs = [
     { id: 'actions', label: 'Actions' },
-    { id: 'provider', label: 'Provider' },
+    { id: 'provider', label: 'Providers' },
     { id: 'history', label: 'History' },
     { id: 'settings', label: 'Settings' },
   ] as const;

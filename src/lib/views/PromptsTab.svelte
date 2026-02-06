@@ -94,7 +94,7 @@
       <div class="flex flex-col gap-2">
         <!-- Header row -->
         <button
-          class="flex items-center justify-between w-full text-left"
+          class="flex items-center justify-between w-full text-left cursor-pointer"
           onclick={() => toggleExpand(action.id)}
         >
           <div class="flex items-center gap-2">
@@ -113,7 +113,6 @@
                 {action.hotkey.replace('CommandOrControl', '⌘').replace('Alt', '⌥').replace('Shift', '⇧').replace('Control', '⌃').replace(/\+/g, '')}
               </span>
             {/if}
-            <span class="text-white/40 text-xs">{expandedId === action.id ? '▾' : '▸'}</span>
           </div>
         </button>
 

@@ -12,6 +12,7 @@ export interface RewriteAction {
 }
 
 export interface ProviderConfig {
+  id: string;
   name: string;
   base_url: string;
   model: string;

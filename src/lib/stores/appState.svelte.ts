@@ -34,12 +34,17 @@ let actions = $state<RewriteAction[]>([
   },
 ]);
 
-let provider = $state<ProviderConfig>({
-  name: "Default",
-  base_url: "https://api.openai.com",
-  model: "gpt-4o-mini",
-  timeout_secs: 30,
-});
+let providers = $state<ProviderConfig[]>([
+  {
+    id: "default",
+    name: "OpenAI",
+    base_url: "https://api.openai.com",
+    model: "gpt-4o-mini",
+    timeout_secs: 30,
+  },
+]);
+
+let activeProviderId = $state("default");
 
 // Store instance (lazy loaded)
 let storeInstance: Awaited<ReturnType<typeof load>> | null = null;
@@ -68,8 +73,22 @@ async function loadState() {
     const savedActions = await store.get<RewriteAction[]>("actions");
     if (savedActions && savedActions.length > 0) actions = savedActions;
 
-    const savedProvider = await store.get<ProviderConfig>("provider");
-    if (savedProvider) provider = savedProvider;
+    // Load multi-provider state, with migration from single provider
+    const savedProviders = await store.get<ProviderConfig[]>("providers");
+    const savedActiveId = await store.get<string>("activeProviderId");
+
+    if (savedProviders && savedProviders.length > 0) {
+      providers = savedProviders;
+      if (savedActiveId) activeProviderId = savedActiveId;
+      else activeProviderId = savedProviders[0].id;
+    } else {
+      // Migrate from old single-provider format
+      const savedProvider = await store.get<{ name: string; base_url: string; model: string; timeout_secs: number }>("provider");
+      if (savedProvider) {
+        providers = [{ id: "default", ...savedProvider }];
+        activeProviderId = "default";
+      }
+    }
   } catch (e) {
     console.error("Failed to load state:", e);
   }
@@ -82,7 +101,8 @@ async function saveState() {
     await store.set("privacyMode", privacyMode);
     await store.set("hasCompletedOnboarding", hasCompletedOnboarding);
     await store.set("actions", actions);
-    await store.set("provider", provider);
+    await store.set("providers", providers);
+    await store.set("activeProviderId", activeProviderId);
   } catch (e) {
     console.error("Failed to save state:", e);
   }
@@ -110,8 +130,16 @@ export const appState = {
   get actions() { return actions; },
   set actions(v: RewriteAction[]) { actions = v; saveState(); },
 
-  get provider() { return provider; },
-  set provider(v: ProviderConfig) { provider = v; saveState(); },
+  get providers() { return providers; },
+  set providers(v: ProviderConfig[]) { providers = v; saveState(); },
+
+  get activeProviderId() { return activeProviderId; },
+  set activeProviderId(v: string) { activeProviderId = v; saveState(); },
+
+  /** Active provider (computed from providers + activeProviderId) */
+  get provider(): ProviderConfig {
+    return providers.find(p => p.id === activeProviderId) ?? providers[0];
+  },
 
   loadState,
   saveState,

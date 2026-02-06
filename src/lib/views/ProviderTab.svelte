@@ -1,79 +1,107 @@
 <script lang="ts">
   import GlassCard from '$lib/components/GlassCard.svelte';
-  import StatusIndicator from '$lib/components/StatusIndicator.svelte';
   import { appState } from '$lib/stores/appState.svelte';
-  import { saveApiKey, getApiKey, testConnection } from '$lib/utils/commands';
+  import { saveApiKey, getApiKey, deleteApiKey, testConnection } from '$lib/utils/commands';
+  import type { ProviderConfig } from '$lib/utils/commands';
 
-  let apiKey = $state('');
-  let apiKeyLoaded = $state(false);
-  let testing = $state(false);
+  let expandedId = $state<string | null>(null);
+  let apiKeys = $state<Record<string, string>>({});
+  let apiKeyLoaded = $state<Record<string, boolean>>({});
+  let testing = $state<string | null>(null);
   let testResult = $state<{ success: boolean; message: string } | null>(null);
-  let saveTimer: ReturnType<typeof setTimeout> | null = null;
-  let lastLoadedProvider = '';
+  let confirmingDeleteId = $state<string | null>(null);
 
-  // Load API key only when provider name actually changes
-  $effect(() => {
-    const name = appState.provider.name;
-    if (name !== lastLoadedProvider) {
-      lastLoadedProvider = name;
-      loadApiKey(name);
+  // Load API key when a provider is expanded
+  async function loadApiKey(provider: ProviderConfig) {
+    if (apiKeyLoaded[provider.id]) return;
+    try {
+      const key = await getApiKey(provider.name);
+      apiKeys[provider.id] = key ?? '';
+      apiKeyLoaded[provider.id] = true;
+    } catch (e) {
+      console.error('Failed to load API key:', e);
+      apiKeyLoaded[provider.id] = true;
     }
-  });
+  }
 
-  // Autosave provider settings on change (debounced)
-  $effect(() => {
-    // Access all reactive fields to track them
-    const _name = appState.provider.name;
-    const _url = appState.provider.base_url;
-    const _model = appState.provider.model;
-    const _timeout = appState.provider.timeout_secs;
+  function toggleExpand(id: string) {
+    confirmingDeleteId = null;
+    if (expandedId === id) {
+      expandedId = null;
+    } else {
+      expandedId = id;
+      const provider = appState.providers.find(p => p.id === id);
+      if (provider) loadApiKey(provider);
+    }
+  }
 
-    if (!apiKeyLoaded) return;
+  function setActive(id: string) {
+    appState.activeProviderId = id;
+  }
 
-    if (saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-      appState.provider = { ...appState.provider };
-    }, 500);
-  });
+  function addProvider() {
+    const id = `provider-${Date.now()}`;
+    const newProvider: ProviderConfig = {
+      id,
+      name: 'New Provider',
+      base_url: 'https://api.openai.com',
+      model: 'gpt-4o-mini',
+      timeout_secs: 30,
+    };
+    appState.providers = [...appState.providers, newProvider];
+    expandedId = id;
+    apiKeyLoaded[id] = true;
+    apiKeys[id] = '';
+  }
 
-  // Autosave API key on change (debounced)
-  let keyTimer: ReturnType<typeof setTimeout> | null = null;
-  $effect(() => {
-    const _key = apiKey;
-    if (!apiKeyLoaded) return;
+  async function deleteProvider(id: string) {
+    const provider = appState.providers.find(p => p.id === id);
+    if (provider) {
+      deleteApiKey(provider.name).catch(() => {});
+    }
+    appState.providers = appState.providers.filter(p => p.id !== id);
+    if (expandedId === id) expandedId = null;
+    // If we deleted the active provider, activate the first remaining one
+    if (appState.activeProviderId === id && appState.providers.length > 0) {
+      appState.activeProviderId = appState.providers[0].id;
+    }
+  }
 
-    if (keyTimer) clearTimeout(keyTimer);
-    keyTimer = setTimeout(async () => {
-      if (apiKey) {
+  // Debounced save for provider fields
+  let saveTimers: Record<string, ReturnType<typeof setTimeout>> = {};
+  function updateProvider(id: string, field: keyof ProviderConfig, value: string | number) {
+    const idx = appState.providers.findIndex(p => p.id === id);
+    if (idx < 0) return;
+    const updated = [...appState.providers];
+    updated[idx] = { ...updated[idx], [field]: value };
+    appState.providers = updated;
+  }
+
+  // Debounced API key save
+  let keyTimers: Record<string, ReturnType<typeof setTimeout>> = {};
+  function handleApiKeyInput(id: string, value: string) {
+    apiKeys[id] = value;
+    const provider = appState.providers.find(p => p.id === id);
+    if (!provider) return;
+
+    if (keyTimers[id]) clearTimeout(keyTimers[id]);
+    keyTimers[id] = setTimeout(async () => {
+      if (value) {
         try {
-          await saveApiKey(appState.provider.name, apiKey);
+          await saveApiKey(provider.name, value);
         } catch (e) {
           console.error('Failed to save API key:', e);
         }
       }
     }, 500);
-  });
-
-  async function loadApiKey(providerName: string) {
-    try {
-      const key = await getApiKey(providerName);
-      apiKey = key ?? '';
-      apiKeyLoaded = true;
-    } catch (e) {
-      console.error('Failed to load API key:', e);
-      apiKeyLoaded = true;
-    }
   }
 
-  async function handleTest() {
-    testing = true;
+  async function handleTest(provider: ProviderConfig) {
+    testing = provider.id;
     testResult = null;
     try {
-      const result = await testConnection(
-        appState.provider.base_url,
-        apiKey,
-        appState.provider.model
-      );
+      const key = apiKeys[provider.id] || await getApiKey(provider.name) || '';
+      const result = await testConnection(provider.base_url, key, provider.model);
       testResult = {
         success: result.success,
         message: result.success
@@ -83,78 +111,154 @@
     } catch (e) {
       testResult = { success: false, message: `Error: ${e}` };
     } finally {
-      testing = false;
+      testing = null;
     }
   }
 </script>
 
-<div class="flex flex-col gap-3 p-1">
-  <GlassCard padding="p-4">
-    <div class="flex flex-col gap-3">
-      <label class="flex flex-col gap-1">
-        <span class="text-xs text-white/50">Provider Name</span>
-        <input
-          type="text"
-          bind:value={appState.provider.name}
-          class="bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white/90 outline-none focus:border-white/30"
-        />
-      </label>
+<div class="flex flex-col gap-3 h-full overflow-y-auto p-1">
+  {#each appState.providers as provider (provider.id)}
+    <GlassCard padding="p-3">
+      <div class="flex flex-col gap-2">
+        <!-- Header row -->
+        <button
+          class="flex items-center justify-between w-full text-left cursor-pointer"
+          onclick={() => toggleExpand(provider.id)}
+        >
+          <div class="flex items-center gap-2.5">
+            <!-- Active radio indicator -->
+            <div
+              class="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors cursor-pointer
+                {appState.activeProviderId === provider.id
+                  ? 'border-green-400 bg-green-400/20'
+                  : 'border-white/30 hover:border-white/50'}"
+              role="radio"
+              tabindex="-1"
+              aria-checked={appState.activeProviderId === provider.id}
+              onclick={(e) => { e.stopPropagation(); setActive(provider.id); }}
+              onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); setActive(provider.id); } }}
+            >
+              {#if appState.activeProviderId === provider.id}
+                <div class="w-2 h-2 rounded-full bg-green-400"></div>
+              {/if}
+            </div>
+            <div class="flex flex-col">
+              <span class="text-sm font-medium text-white/90">{provider.name}</span>
+              <span class="text-[11px] text-white/40 font-mono">{provider.model}</span>
+            </div>
+          </div>
+        </button>
 
-      <label class="flex flex-col gap-1">
-        <span class="text-xs text-white/50">Base URL</span>
-        <input
-          type="text"
-          bind:value={appState.provider.base_url}
-          placeholder="https://api.openai.com"
-          class="bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white/90 font-mono outline-none focus:border-white/30"
-        />
-      </label>
+        <!-- Expanded editor -->
+        {#if expandedId === provider.id}
+          <div class="flex flex-col gap-3 pt-2 border-t border-white/10">
+            <label class="flex flex-col gap-1">
+              <span class="text-xs text-white/50">Provider Name</span>
+              <input
+                type="text"
+                value={provider.name}
+                oninput={(e) => updateProvider(provider.id, 'name', (e.target as HTMLInputElement).value)}
+                class="bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white/90 outline-none focus:border-white/30"
+              />
+            </label>
 
-      <label class="flex flex-col gap-1">
-        <span class="text-xs text-white/50">Model</span>
-        <input
-          type="text"
-          bind:value={appState.provider.model}
-          placeholder="gpt-4o-mini"
-          class="bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white/90 font-mono outline-none focus:border-white/30"
-        />
-      </label>
+            <label class="flex flex-col gap-1">
+              <span class="text-xs text-white/50">Base URL</span>
+              <input
+                type="text"
+                value={provider.base_url}
+                oninput={(e) => updateProvider(provider.id, 'base_url', (e.target as HTMLInputElement).value)}
+                placeholder="https://api.openai.com"
+                class="bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white/90 font-mono outline-none focus:border-white/30"
+              />
+            </label>
 
-      <label class="flex flex-col gap-1">
-        <span class="text-xs text-white/50">API Key</span>
-        <input
-          type="password"
-          bind:value={apiKey}
-          placeholder={apiKeyLoaded ? '••••••••' : 'Loading...'}
-          class="bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white/90 font-mono outline-none focus:border-white/30"
-        />
-      </label>
+            <label class="flex flex-col gap-1">
+              <span class="text-xs text-white/50">Model</span>
+              <input
+                type="text"
+                value={provider.model}
+                oninput={(e) => updateProvider(provider.id, 'model', (e.target as HTMLInputElement).value)}
+                placeholder="gpt-4o-mini"
+                class="bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white/90 font-mono outline-none focus:border-white/30"
+              />
+            </label>
 
-      <label class="flex flex-col gap-1">
-        <span class="text-xs text-white/50">Timeout: {appState.provider.timeout_secs}s</span>
-        <input
-          type="range"
-          min="5"
-          max="120"
-          step="5"
-          bind:value={appState.provider.timeout_secs}
-          class="w-full accent-blue-400"
-        />
-      </label>
-    </div>
-  </GlassCard>
+            <label class="flex flex-col gap-1">
+              <span class="text-xs text-white/50">API Key</span>
+              <input
+                type="password"
+                value={apiKeys[provider.id] ?? ''}
+                oninput={(e) => handleApiKeyInput(provider.id, (e.target as HTMLInputElement).value)}
+                placeholder={apiKeyLoaded[provider.id] ? '••••••••' : 'Loading...'}
+                class="bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white/90 font-mono outline-none focus:border-white/30"
+              />
+            </label>
+
+            <label class="flex flex-col gap-1">
+              <span class="text-xs text-white/50">Timeout: {provider.timeout_secs}s</span>
+              <input
+                type="range"
+                min="5"
+                max="120"
+                step="5"
+                value={provider.timeout_secs}
+                oninput={(e) => updateProvider(provider.id, 'timeout_secs', Number((e.target as HTMLInputElement).value))}
+                class="w-full accent-blue-400"
+              />
+            </label>
+
+            <button
+              class="w-full py-2 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/15 text-white/70 border border-white/10 disabled:opacity-50 cursor-pointer"
+              onclick={() => handleTest(provider)}
+              disabled={testing === provider.id}
+            >
+              {testing === provider.id ? 'Testing...' : 'Test Connection'}
+            </button>
+
+            {#if testResult && expandedId === provider.id}
+              <div class="text-center text-xs {testResult.success ? 'text-green-300' : 'text-red-300'}">
+                {testResult.message}
+              </div>
+            {/if}
+
+            {#if appState.providers.length > 1}
+              <div class="pt-1">
+                {#if confirmingDeleteId === provider.id}
+                  <div class="flex gap-2">
+                    <button
+                      class="flex-1 py-1.5 rounded-lg text-xs font-medium bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-400/20 cursor-pointer"
+                      onclick={() => deleteProvider(provider.id)}
+                    >
+                      Confirm Delete
+                    </button>
+                    <button
+                      class="flex-1 py-1.5 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/15 text-white/70 border border-white/10 cursor-pointer"
+                      onclick={() => confirmingDeleteId = null}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                {:else}
+                  <button
+                    class="w-full py-1.5 rounded-lg text-xs font-medium bg-red-500/10 hover:bg-red-500/20 text-red-300/70 border border-red-400/10 cursor-pointer"
+                    onclick={() => confirmingDeleteId = provider.id}
+                  >
+                    Delete Provider
+                  </button>
+                {/if}
+              </div>
+            {/if}
+          </div>
+        {/if}
+      </div>
+    </GlassCard>
+  {/each}
 
   <button
-    class="w-full py-2 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/15 text-white/70 border border-white/10 disabled:opacity-50"
-    onclick={handleTest}
-    disabled={testing}
+    class="w-full py-2 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/15 text-white/60 border border-dashed border-white/20 cursor-pointer"
+    onclick={addProvider}
   >
-    {testing ? 'Testing...' : 'Test Connection'}
+    + Add Provider
   </button>
-
-  {#if testResult}
-    <div class="text-center text-xs {testResult.success ? 'text-green-300' : 'text-red-300'}">
-      {testResult.message}
-    </div>
-  {/if}
 </div>

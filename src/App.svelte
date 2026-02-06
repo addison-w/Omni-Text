@@ -19,6 +19,7 @@
     registerHotkey,
     setTrayState,
     checkAccessibilityPermission,
+    requestAccessibilityPermission,
   } from '$lib/utils/commands';
   import Database from '@tauri-apps/plugin-sql';
 
@@ -166,7 +167,16 @@
 
     await registerHotkeysAndListen();
 
-    // Monitor accessibility permission on window focus
+    // Prompt if accessibility not granted (e.g. after app update changes binary signature)
+    const hasPermission = await checkPermissionState();
+    if (!hasPermission) {
+      requestAccessibilityPermission();
+    }
+
+    // Continuous background poll for accessibility permission
+    setInterval(() => checkPermissionState(), 2000);
+
+    // Also check immediately on window focus
     getCurrentWindow().onFocusChanged(({ payload: focused }) => {
       if (focused) checkPermissionState();
     });

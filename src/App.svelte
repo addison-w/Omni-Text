@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { listen } from '@tauri-apps/api/event';
+  import { getCurrentWindow } from '@tauri-apps/api/window';
   import Toast from '$lib/components/Toast.svelte';
   import StatusIndicator from '$lib/components/StatusIndicator.svelte';
   import PromptsTab from '$lib/views/PromptsTab.svelte';
@@ -17,6 +18,7 @@
     getApiKey,
     registerHotkey,
     setTrayState,
+    checkAccessibilityPermission,
   } from '$lib/utils/commands';
   import Database from '@tauri-apps/plugin-sql';
 
@@ -37,8 +39,30 @@
     toastTimeout = setTimeout(() => { toastVisible = false; }, 3000);
   }
 
+  async function checkPermissionState(): Promise<boolean> {
+    const granted = await checkAccessibilityPermission();
+    if (granted) {
+      if (appState.status === 'not-ready') {
+        appState.status = 'ready';
+        setTrayState('ready').catch(console.error);
+      }
+    } else {
+      appState.status = 'not-ready';
+      setTrayState('error').catch(console.error);
+    }
+    return granted;
+  }
+
   async function handleHotkeyTriggered(actionId: string) {
     if (!appState.isEnabled || appState.isProcessing) return;
+
+    const hasPermission = await checkPermissionState();
+    if (!hasPermission) {
+      new Notification('Omni Text', {
+        body: 'Accessibility permission is required. Open System Settings to grant access.',
+      });
+      return;
+    }
 
     const action = appState.actions.find(a => a.id === actionId && a.enabled);
     if (!action) return;
@@ -141,6 +165,11 @@
     }
 
     await registerHotkeysAndListen();
+
+    // Monitor accessibility permission on window focus
+    getCurrentWindow().onFocusChanged(({ payload: focused }) => {
+      if (focused) checkPermissionState();
+    });
   });
 
   async function handleOnboardingComplete() {

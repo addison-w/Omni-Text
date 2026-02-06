@@ -95,6 +95,14 @@ Download the latest `.dmg` from the [Releases](https://github.com/addison-w/Omni
 4. 🔑 Go to the **Providers** tab and add your API key
 5. ✨ Select some text anywhere and press `Cmd+Shift+1` — welcome to the future
 
+> **⚠️ "App is damaged and can't be opened"** — This happens because the app isn't code-signed with an Apple Developer certificate yet. macOS Gatekeeper quarantines unsigned apps downloaded from the internet. To fix it, run this in Terminal after dragging to Applications:
+>
+> ```bash
+> xattr -cr /Applications/Omni\ Text.app
+> ```
+>
+> Then open the app normally. You only need to do this once.
+
 ### 📋 Requirements
 
 - **macOS 13+** (Ventura or later)

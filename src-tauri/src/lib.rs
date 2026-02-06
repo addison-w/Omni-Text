@@ -79,6 +79,12 @@ pub fn run() {
             set_tray_state,
         ])
         .setup(|app| {
+            // Initialize encrypted key storage
+            let app_dir = app.path().app_config_dir().expect("Failed to get app config dir");
+            std::fs::create_dir_all(&app_dir).expect("Failed to create app config dir");
+            let key_storage = services::key_storage::KeyStorage::new(app_dir);
+            app.manage(key_storage);
+
             // Hide from Dock — menu bar only app
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);

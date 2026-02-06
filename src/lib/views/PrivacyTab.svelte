@@ -3,11 +3,13 @@
   import { appState } from '$lib/stores/appState.svelte';
   import Database from '@tauri-apps/plugin-sql';
 
+  let confirmingClear = $state(false);
+
   async function clearAllHistory() {
-    if (!confirm('This will permanently delete all history. Continue?')) return;
     try {
       const db = await Database.load('sqlite:omni_text_history.db');
       await db.execute('DELETE FROM history');
+      confirmingClear = false;
     } catch (e) {
       console.error('Failed to clear history:', e);
     }
@@ -51,12 +53,29 @@
   <GlassCard padding="p-4">
     <div class="flex flex-col gap-3">
       <span class="text-xs text-white/50 uppercase tracking-wider">Data Management</span>
-      <button
-        class="w-full py-2 rounded-xl text-sm font-medium bg-red-500/10 hover:bg-red-500/20 text-red-300/70 border border-red-400/10"
-        onclick={clearAllHistory}
-      >
-        Clear All History
-      </button>
+      {#if confirmingClear}
+        <div class="flex gap-2">
+          <button
+            class="flex-1 py-2 rounded-xl text-sm font-medium bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-400/20"
+            onclick={clearAllHistory}
+          >
+            Confirm Clear
+          </button>
+          <button
+            class="flex-1 py-2 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/15 text-white/70 border border-white/10"
+            onclick={() => confirmingClear = false}
+          >
+            Cancel
+          </button>
+        </div>
+      {:else}
+        <button
+          class="w-full py-2 rounded-xl text-sm font-medium bg-red-500/10 hover:bg-red-500/20 text-red-300/70 border border-red-400/10"
+          onclick={() => confirmingClear = true}
+        >
+          Clear All History
+        </button>
+      {/if}
     </div>
   </GlassCard>
 </div>

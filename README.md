@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">✨ Omni Text</h1>
+  <h1 align="center">Omni Text</h1>
   <p align="center">
     <strong>AI-powered text rewriting from anywhere on your Mac.</strong>
     <br />
@@ -19,14 +19,14 @@
 
 Omni Text lives in your menu bar and waits for a hotkey. When triggered, it grabs your selected text, sends it to an LLM, and replaces it with the result — all without leaving the app you're working in. Proofread an email, rephrase a Slack message, translate a paragraph, or run any custom prompt you can dream up.
 
-## ⚡ How It Works
+## How It Works
 
 ```
-1. 📝 Select text in any application
-2. ⌨️  Press your hotkey
-3. 🤖 Text is sent to your LLM provider
-4. ✅ Rewritten text replaces your selection
-5. ↩️  ⌘Z to undo if you don't like it
+1. Select text in any application
+2. Press your hotkey
+3. Text is sent to your LLM provider
+4. Rewritten text replaces your selection
+5. Cmd+Z to undo if you don't like it
 ```
 
 No context switching. No copy-paste. No browser tabs. Just better text.
@@ -35,31 +35,44 @@ No context switching. No copy-paste. No browser tabs. Just better text.
 
 | Hotkey | Action | Description |
 |--------|--------|-------------|
-| `⌘⇧1` | **Proofread** | Fix spelling, grammar, and punctuation |
-| `⌘⇧2` | **Rewrite** | Rewrite for clarity and readability |
+| `Cmd+Shift+1` | **Proofread** | Fix spelling, grammar, and punctuation |
+| `Cmd+Shift+2` | **Rewrite** | Rewrite for clarity and readability |
 
-You can customize these or add your own in Settings → Actions.
+You can customize these or add your own in the Actions tab.
 
-## 🎯 Features
+## Features
 
-| | Feature | Description |
-|---|---------|-------------|
-| ⌨️ | **Global Hotkeys** | Trigger actions from any app — no window switching |
-| 🎨 | **Custom Actions** | Unlimited rewrite prompts, each with its own hotkey |
-| 🔌 | **Any LLM Provider** | OpenAI, Anthropic, or any OpenAI-compatible API |
-| 🖥️ | **Menu Bar Native** | Lives in your menu bar — no Dock icon, zero distraction |
-| 🔒 | **Privacy Mode** | Disable history logging for sensitive content |
-| 📜 | **Local History** | Searchable SQLite log of every rewrite |
-| 💎 | **Native macOS Feel** | Translucent HUD window with vibrancy effects |
-| 🔐 | **Keychain Storage** | API keys stored in macOS Keychain, never on disk |
+| Feature | Description |
+|---------|-------------|
+| **Global Hotkeys** | Trigger actions from any app — no window switching |
+| **Custom Actions** | Unlimited rewrite prompts, each with its own hotkey |
+| **Multiple Providers** | Configure multiple OpenAI-compatible providers, switch between them with one click |
+| **Smart URL Handling** | Accepts bare domains, versioned paths (`/v1`), or full endpoint URLs |
+| **Menu Bar Native** | Lives in your menu bar — no Dock icon, zero distraction |
+| **Animated Tray Icon** | Pixelated cat icon shows app status: ready, processing, or error |
+| **Privacy Mode** | Disable history logging for sensitive content |
+| **Local History** | Searchable SQLite log of every rewrite |
+| **Native macOS Feel** | Translucent HUD window with always-active vibrancy |
+| **Keychain Storage** | API keys stored in macOS Keychain, never on disk |
+| **Autosave** | All settings persist automatically as you type |
 
-## 📋 Requirements
+## Installation
+
+Download the latest `.dmg` from the [Releases](https://github.com/addison-w/Omni-Text/releases) page.
+
+1. Open the `.dmg` and drag **Omni Text** to Applications
+2. Launch from Applications — the cat icon appears in your menu bar
+3. Grant **Accessibility** permission when prompted (required to read/replace selected text)
+4. Configure your LLM provider in the **Providers** tab
+5. Start rewriting with `Cmd+Shift+1` or `Cmd+Shift+2`
+
+## Requirements
 
 - **macOS 13+** (Ventura or later)
 - **Accessibility permission** — required to read and replace selected text
-- **API key** from OpenAI, Anthropic, or a compatible provider
+- **API key** from OpenAI, Anthropic, or any OpenAI-compatible provider
 
-## 🛠️ Development
+## Development
 
 ### Prerequisites
 
@@ -85,24 +98,19 @@ pnpm tauri build
 
 Find your `.app` bundle in `src-tauri/target/release/bundle/macos/`.
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 ```
-┌─────────────────────────────────────────┐
-│  Frontend    Svelte 5 + Tailwind CSS v4 │
-├─────────────────────────────────────────┤
-│  Backend     Rust                       │
-├─────────────────────────────────────────┤
-│  Framework   Tauri v2                   │
-├─────────────────────────────────────────┤
-│  Storage     SQLite (tauri-plugin-sql)  │
-│  Secrets     macOS Keychain (keyring)   │
-│  Shortcuts   Global Shortcut Plugin     │
-│  Text I/O    Accessibility API + rdev   │
-│  UI          HUD Window + Vibrancy      │
-└─────────────────────────────────────────┘
+Frontend    Svelte 5 + Tailwind CSS v4
+Backend     Rust
+Framework   Tauri v2
+Storage     SQLite (tauri-plugin-sql)
+Secrets     macOS Keychain (keyring)
+Shortcuts   Global Shortcut Plugin
+Text I/O    Accessibility API + rdev
+UI          HUD Window + Vibrancy
 ```
 
-## 📄 License
+## License
 
-MIT — do whatever you want with it.
+MIT

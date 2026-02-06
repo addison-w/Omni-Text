@@ -10,7 +10,7 @@ use tauri::{
     AppHandle, Manager,
 };
 use tauri_plugin_positioner::{Position, WindowExt as PosWindowExt};
-use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial, NSVisualEffectState};
 
 use commands::{
     history::*,
@@ -86,7 +86,7 @@ pub fn run() {
             // Apply vibrancy to main window
             if let Some(window) = app.get_webview_window("main") {
                 #[cfg(target_os = "macos")]
-                let _ = apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None);
+                let _ = apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, Some(NSVisualEffectState::Active), None);
             }
 
             // Build tray icon

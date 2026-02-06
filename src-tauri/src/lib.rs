@@ -2,6 +2,8 @@ mod commands;
 mod models;
 mod services;
 
+use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
@@ -16,6 +18,7 @@ use commands::{
     keychain::*,
     llm_provider::*,
     text_interaction::*,
+    tray_icon::*,
 };
 
 #[tauri::command]
@@ -73,6 +76,7 @@ pub fn run() {
             delete_history_entry,
             clear_history,
             quit_app,
+            set_tray_state,
         ])
         .setup(|app| {
             // Hide from Dock — menu bar only app
@@ -90,12 +94,14 @@ pub fn run() {
                 MenuItem::with_id(app, "quit", "Quit Omni Text", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&quit_item])?;
 
-            let _tray = TrayIconBuilder::new()
-                .icon(
-                    app.default_window_icon()
-                        .cloned()
-                        .expect("No default window icon set"),
-                )
+            // Load cat-ready icon for initial tray state
+            let ready_icon = tauri::image::Image::from_bytes(
+                include_bytes!("../icons/cat-ready-44.png"),
+            )
+            .expect("Failed to load cat-ready icon");
+
+            let tray = TrayIconBuilder::new()
+                .icon(ready_icon)
                 .tooltip("Omni Text")
                 .menu(&menu)
                 .show_menu_on_left_click(false)
@@ -126,6 +132,12 @@ pub fn run() {
                     }
                 })
                 .build(app)?;
+
+            // Store tray handle for dynamic icon switching
+            app.manage(commands::tray_icon::TrayState {
+                tray,
+                animating: Arc::new(AtomicBool::new(false)),
+            });
 
             Ok(())
         })

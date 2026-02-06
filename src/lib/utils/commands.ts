@@ -126,3 +126,8 @@ export async function unregisterAllHotkeys(): Promise<void> {
 export async function initHistoryDb(): Promise<void> {
   return invoke("init_history_db");
 }
+
+// Tray icon state
+export async function setTrayState(state: 'ready' | 'processing' | 'error'): Promise<void> {
+  return invoke("set_tray_state", { state });
+}

@@ -3,3 +3,4 @@ pub mod llm_provider;
 pub mod keychain;
 pub mod hotkeys;
 pub mod history;
+pub mod tray_icon;

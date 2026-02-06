@@ -16,6 +16,7 @@
     callLLM,
     getApiKey,
     registerHotkey,
+    setTrayState,
   } from '$lib/utils/commands';
   import Database from '@tauri-apps/plugin-sql';
 
@@ -44,6 +45,8 @@
 
     appState.isProcessing = true;
     appState.status = 'processing';
+    setTrayState('processing').catch(console.error);
+    let hadError = false;
 
     try {
       const selectedText = await getSelectedText();
@@ -99,12 +102,17 @@
 
       showToast(`Rewritten (${response.duration_ms}ms). ⌘Z to undo.`, 'success');
     } catch (e) {
+      hadError = true;
       const error = String(e);
       showToast(error, 'error');
       appState.currentError = error;
+      setTrayState('error').catch(console.error);
     } finally {
       appState.isProcessing = false;
-      appState.status = 'ready';
+      if (!hadError) {
+        appState.status = 'ready';
+        setTrayState('ready').catch(console.error);
+      }
     }
   }
 

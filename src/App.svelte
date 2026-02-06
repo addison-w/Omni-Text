@@ -145,6 +145,7 @@
 
   async function handleOnboardingComplete() {
     appState.hasCompletedOnboarding = true;
+    await appState.saveState();
     showOnboarding = false;
     await registerHotkeysAndListen();
   }

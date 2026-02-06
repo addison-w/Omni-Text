@@ -15,6 +15,8 @@
   let { onComplete }: Props = $props();
 
   let step = $state(0);
+  let baseUrl = $state(appState.provider.base_url);
+  let model = $state(appState.provider.model);
   let apiKey = $state('');
   let testing = $state(false);
   let testResult = $state<{ success: boolean; message: string } | null>(null);
@@ -22,18 +24,24 @@
 
   const steps = ['Welcome', 'Provider', 'Accessibility', 'Ready'];
 
+  function saveProviderSettings() {
+    const idx = appState.providers.findIndex(p => p.id === appState.activeProviderId);
+    if (idx >= 0) {
+      const updated = [...appState.providers];
+      updated[idx] = { ...updated[idx], base_url: baseUrl, model: model };
+      appState.providers = updated;
+    }
+  }
+
   async function handleTestAndNext() {
     testing = true;
     testResult = null;
     try {
+      saveProviderSettings();
       if (apiKey) {
         await saveApiKey(appState.provider.name, apiKey);
       }
-      const result = await testConnection(
-        appState.provider.base_url,
-        apiKey,
-        appState.provider.model
-      );
+      const result = await testConnection(baseUrl, apiKey, model);
       if (result.success) {
         testResult = { success: true, message: `Connected! (${result.latency_ms}ms)` };
         setTimeout(() => { step = 2; }, 800);
@@ -45,6 +53,11 @@
     } finally {
       testing = false;
     }
+  }
+
+  function handleSkip() {
+    saveProviderSettings();
+    step = 2;
   }
 
   async function checkAccessibility() {
@@ -103,7 +116,7 @@
             <span class="text-xs text-black/50 dark:text-white/50">Base URL</span>
             <input
               type="text"
-              bind:value={appState.provider.base_url}
+              bind:value={baseUrl}
               placeholder="https://api.openai.com"
               class="bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/15 rounded-lg px-3 py-2 text-sm text-black/85 dark:text-white/90 font-mono outline-none focus:border-black/25 dark:focus:border-white/30"
             />
@@ -112,7 +125,7 @@
             <span class="text-xs text-black/50 dark:text-white/50">Model</span>
             <input
               type="text"
-              bind:value={appState.provider.model}
+              bind:value={model}
               placeholder="gpt-4o-mini"
               class="bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/15 rounded-lg px-3 py-2 text-sm text-black/85 dark:text-white/90 font-mono outline-none focus:border-black/25 dark:focus:border-white/30"
             />
@@ -145,7 +158,7 @@
 
       <button
         class="text-xs text-black/30 dark:text-white/30 hover:text-black/50 dark:hover:text-white/50"
-        onclick={() => step = 2}
+        onclick={handleSkip}
       >
         Skip for now
       </button>

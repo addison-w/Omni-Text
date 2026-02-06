@@ -23,6 +23,8 @@ extern "C" {
 #[link(name = "CoreFoundation", kind = "framework")]
 extern "C" {
     static kCFBooleanTrue: CFBooleanRef;
+    static kCFTypeDictionaryKeyCallBacks: c_void;
+    static kCFTypeDictionaryValueCallBacks: c_void;
     fn CFStringCreateWithCString(
         alloc: *const c_void,
         c_str: *const u8,
@@ -51,23 +53,8 @@ fn cf_string(s: &str) -> CFStringRef {
 /// Check if the app has accessibility permission
 pub fn check_permission() -> bool {
     unsafe {
-        let key = cf_string("AXTrustedCheckOptionPrompt");
-        // Create dict with prompt = false (just check, don't prompt)
-        let keys = [key as *const c_void];
-        let false_val = std::ptr::null(); // kCFBooleanFalse equivalent - we pass null to not prompt
-        let values = [false_val];
-        let dict = CFDictionaryCreate(
-            std::ptr::null(),
-            keys.as_ptr(),
-            values.as_ptr(),
-            0, // empty dict = no prompt
-            std::ptr::null(),
-            std::ptr::null(),
-        );
-        let result = AXIsProcessTrustedWithOptions(dict);
-        CFRelease(dict);
-        CFRelease(key);
-        result
+        // Pass NULL options to just check without prompting
+        AXIsProcessTrustedWithOptions(std::ptr::null())
     }
 }
 
@@ -82,8 +69,8 @@ pub fn request_permission() {
             keys.as_ptr(),
             values.as_ptr(),
             1,
-            std::ptr::null(),
-            std::ptr::null(),
+            &kCFTypeDictionaryKeyCallBacks as *const c_void,
+            &kCFTypeDictionaryValueCallBacks as *const c_void,
         );
         AXIsProcessTrustedWithOptions(dict);
         CFRelease(dict);
@@ -224,4 +211,78 @@ extern "C" {
         buffer_size: isize,
         encoding: u32,
     ) -> bool;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn check_permission_does_not_crash() {
+        // This was the root cause of the onboarding crash:
+        // check_permission() previously created a malformed CFDictionary
+        // that caused a SIGSEGV in AXIsProcessTrustedWithOptions.
+        // Now it passes NULL which safely checks without prompting.
+        let result = check_permission();
+        // Result depends on system state, just verify no crash
+        assert!(result == true || result == false);
+    }
+
+    #[test]
+    fn request_permission_does_not_crash() {
+        // Verify CFDictionaryCreate with proper callbacks doesn't crash.
+        // Note: This will show the system accessibility prompt dialog
+        // in CI/interactive environments, but won't crash.
+        request_permission();
+    }
+
+    #[test]
+    fn cf_string_creates_valid_ref() {
+        unsafe {
+            let s = cf_string("AXFocusedUIElement");
+            assert!(!s.is_null());
+            CFRelease(s);
+        }
+    }
+
+    #[test]
+    fn cf_string_roundtrip() {
+        unsafe {
+            let original = "TestString123";
+            let cf = cf_string(original);
+            assert!(!cf.is_null());
+
+            let length = CFStringGetLength(cf);
+            assert!(length > 0);
+
+            let max_size = CFStringGetMaximumSizeForEncoding(length, K_CF_STRING_ENCODING_UTF8) + 1;
+            let mut buffer = vec![0u8; max_size as usize];
+            let success = CFStringGetCString(
+                cf,
+                buffer.as_mut_ptr() as *mut i8,
+                max_size,
+                K_CF_STRING_ENCODING_UTF8,
+            );
+            assert!(success);
+
+            let c_str = std::ffi::CStr::from_ptr(buffer.as_ptr() as *const i8);
+            assert_eq!(c_str.to_string_lossy(), original);
+
+            CFRelease(cf);
+        }
+    }
+
+    #[test]
+    fn get_selected_text_returns_error_without_focused_app() {
+        // Without a focused UI element, should return Err, not crash
+        let result = get_selected_text_ax();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn is_secure_field_returns_false_without_focused_app() {
+        // Without a focused UI element, should return false, not crash
+        let result = is_secure_field();
+        assert!(!result);
+    }
 }

@@ -8,9 +8,44 @@
   let apiKeyLoaded = $state(false);
   let testing = $state(false);
   let testResult = $state<{ success: boolean; message: string } | null>(null);
+  let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
   $effect(() => {
     loadApiKey();
+  });
+
+  // Autosave provider settings on change (debounced)
+  $effect(() => {
+    // Access all reactive fields to track them
+    const _name = appState.provider.name;
+    const _url = appState.provider.base_url;
+    const _model = appState.provider.model;
+    const _timeout = appState.provider.timeout_secs;
+
+    if (!apiKeyLoaded) return;
+
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      appState.provider = { ...appState.provider };
+    }, 500);
+  });
+
+  // Autosave API key on change (debounced)
+  let keyTimer: ReturnType<typeof setTimeout> | null = null;
+  $effect(() => {
+    const _key = apiKey;
+    if (!apiKeyLoaded) return;
+
+    if (keyTimer) clearTimeout(keyTimer);
+    keyTimer = setTimeout(async () => {
+      if (apiKey) {
+        try {
+          await saveApiKey(appState.provider.name, apiKey);
+        } catch (e) {
+          console.error('Failed to save API key:', e);
+        }
+      }
+    }, 500);
   });
 
   async function loadApiKey() {
@@ -21,17 +56,6 @@
     } catch (e) {
       console.error('Failed to load API key:', e);
       apiKeyLoaded = true;
-    }
-  }
-
-  async function handleSave() {
-    try {
-      if (apiKey) {
-        await saveApiKey(appState.provider.name, apiKey);
-      }
-      appState.provider = { ...appState.provider };
-    } catch (e) {
-      console.error('Failed to save:', e);
     }
   }
 
@@ -114,21 +138,13 @@
     </div>
   </GlassCard>
 
-  <div class="flex gap-2">
-    <button
-      class="flex-1 py-2 rounded-xl text-sm font-medium bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border border-blue-400/20"
-      onclick={handleSave}
-    >
-      Save
-    </button>
-    <button
-      class="flex-1 py-2 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/15 text-white/70 border border-white/10 disabled:opacity-50"
-      onclick={handleTest}
-      disabled={testing}
-    >
-      {testing ? 'Testing...' : 'Test Connection'}
-    </button>
-  </div>
+  <button
+    class="w-full py-2 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/15 text-white/70 border border-white/10 disabled:opacity-50"
+    onclick={handleTest}
+    disabled={testing}
+  >
+    {testing ? 'Testing...' : 'Test Connection'}
+  </button>
 
   {#if testResult}
     <div class="text-center text-xs {testResult.success ? 'text-green-300' : 'text-red-300'}">

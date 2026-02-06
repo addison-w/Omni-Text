@@ -16,8 +16,8 @@
       {
         "label": "main",
         "title": "Omni Text",
-        "width": 360,
-        "height": 520,
+        "width": 400,
+        "height": 560,
         "decorations": false,
         "transparent": true,
         "visible": false,

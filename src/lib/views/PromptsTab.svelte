@@ -73,6 +73,22 @@
 </script>
 
 <div class="flex flex-col gap-3 h-full overflow-y-auto p-1">
+  <!-- Global enable toggle -->
+  <GlassCard padding="p-3">
+    <label class="flex items-center justify-between cursor-pointer">
+      <span class="text-sm text-white/80">Enabled</span>
+      <input
+        type="checkbox"
+        bind:checked={appState.isEnabled}
+        class="w-9 h-5 rounded-full appearance-none cursor-pointer
+          bg-white/20 checked:bg-green-500/60
+          relative after:content-[''] after:absolute after:top-0.5 after:left-0.5
+          after:w-4 after:h-4 after:rounded-full after:bg-white after:shadow-sm
+          after:transition-transform checked:after:translate-x-4"
+      />
+    </label>
+  </GlassCard>
+
   {#each appState.actions as action (action.id)}
     <GlassCard padding="p-3">
       <div class="flex flex-col gap-2">
